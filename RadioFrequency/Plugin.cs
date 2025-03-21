@@ -52,7 +52,7 @@ namespace RadioFrequency
         public override void OnDisabled()
         {
             Singleton = null;
-            _harmony.UnpatchAll();
+            _harmony.UnpatchAll(_harmony.Id);
             _harmony = null;
 
             SettingBase.Unregister(null, _settings);
