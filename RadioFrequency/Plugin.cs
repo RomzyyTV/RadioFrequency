@@ -15,7 +15,7 @@ namespace RadioFrequency
 
         public override string Name { get; } = "RadioFrequency";
         public override string Author { get; } = "Bolton";
-        public override Version Version { get; } = new(1, 0, 0);
+        public override Version Version { get; } = new(1, 0, 1);
         public override Version RequiredExiledVersion { get; } = new(9, 0, 0);
 
         public static Plugin Singleton { get; private set; }
