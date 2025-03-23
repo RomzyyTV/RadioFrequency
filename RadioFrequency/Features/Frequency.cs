@@ -14,10 +14,7 @@ namespace RadioFrequency.Features
 
         internal static readonly Dictionary<ushort, Frequency> RadioFrequency = new();
 
-        internal static readonly Dictionary<RoleTypeId, List<Frequency>> FrequenciesByRole = 
-            Enum.GetValues(typeof(RoleTypeId))
-                .Cast<RoleTypeId>()
-                .ToDictionary(role => role, _ => new List<Frequency>());
+        internal static readonly Dictionary<RoleTypeId, List<Frequency>> FrequenciesByRole = new();
 
         internal static readonly Dictionary<Player, Frequency> PlayerFrequency = new();
 
@@ -71,12 +68,18 @@ namespace RadioFrequency.Features
 
             if (AuthorizedRoles.Count <= 0)
             {
-                AuthorizedRoles = Enum.GetValues(typeof(RoleTypeId)).Cast<RoleTypeId>().ToHashSet();
+                AuthorizedRoles = EnumUtils<RoleTypeId>.Values.ToHashSet();
             }
 
             foreach (RoleTypeId role in AuthorizedRoles)
             {
-                FrequenciesByRole[role].Add(this);
+                if (!FrequenciesByRole.TryGetValue(role, out List<Frequency> frequencies))
+                {
+                    frequencies = new List<Frequency>();
+                    FrequenciesByRole[role] = frequencies;
+                }
+
+                frequencies.Add(this);
             }
         }
 

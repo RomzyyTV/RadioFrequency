@@ -2,7 +2,6 @@
 using System.Linq;
 using Exiled.API.Features;
 using Exiled.API.Features.Items;
-using Exiled.Events.EventArgs.Item;
 using Exiled.Events.EventArgs.Player;
 using RadioFrequency.Features;
 using UserSettings.ServerSpecific;
@@ -11,12 +10,8 @@ namespace RadioFrequency
 {
     internal static class EventHandlers
     {
-        private static int _keybindId;
-
         internal static void RegisterEvents()
         {
-            _keybindId = Plugin.Singleton.Config.KeybindId;
-
             Exiled.Events.Handlers.Server.WaitingForPlayers += OnWaitingForPlayers;
             Exiled.Events.Handlers.Player.Left += OnLeft;
             Exiled.Events.Handlers.Player.ItemAdded += OnItemAdded;
@@ -45,51 +40,43 @@ namespace RadioFrequency
 
         private static void OnLeft(LeftEventArgs ev)
         {
-            Player player = ev.Player;
-
-            if (Frequency.TryGetPlayerFrequency(player, out Frequency frequency))
-                frequency.RemovePlayer(player);
+            if (Frequency.TryGetPlayerFrequency(ev.Player, out Frequency frequency))
+                frequency.RemovePlayer(ev.Player);
         }
 
         private static void OnItemAdded(ItemAddedEventArgs ev)
         {
-            Player player = ev.Player;
-            Item item = ev.Item;
-
-            if (item == null || item.Type != ItemType.Radio)
+            if (ev.Item == null || ev.Item.Type != ItemType.Radio)
                 return;
 
-            if (Frequency.TryGetRadioFrequency(item.Serial, out Frequency radioFrequency) && (radioFrequency.AuthorizedRoles.Contains(player.Role.Type) || radioFrequency.CanBePickedUp))
+            if (Frequency.TryGetRadioFrequency(ev.Item.Serial, out Frequency radioFrequency) && (radioFrequency.AuthorizedRoles.Contains(ev.Player.Role.Type) || radioFrequency.CanBePickedUp))
             {
-                radioFrequency.AddPlayer(player);
+                radioFrequency.AddPlayer(ev.Player);
             }
             else
             {
-                if (!Frequency.TryGetFrequenciesByRole(player.Role.Type, out List<Frequency> frequencies) || frequencies.Count <= 0)
+                if (!Frequency.TryGetFrequenciesByRole(ev.Player.Role.Type, out List<Frequency> frequencies) || frequencies.Count <= 0)
                     return;
 
                 Frequency frequency = frequencies.First();
-                frequency.AddPlayer(player);
+                frequency.AddPlayer(ev.Player);
 
-                Frequency.SetRadioFrequency(item.Serial, frequency);
+                Frequency.SetRadioFrequency(ev.Item.Serial, frequency);
             }
         }
 
         private static void OnItemRemoved(ItemRemovedEventArgs ev)
         {
-            Player player = ev.Player;
-            Item item = ev.Item;
-
-            if (item == null || item.Type != ItemType.Radio || player.Items.Any(i => i.Type == ItemType.Radio))
+            if (ev.Item == null || ev.Item.Type != ItemType.Radio || ev.Player.Items.Any(i => i.Type == ItemType.Radio))
                 return;
 
-            if (Frequency.TryGetPlayerFrequency(player, out Frequency frequency))
-                frequency.RemovePlayer(player);
+            if (Frequency.TryGetPlayerFrequency(ev.Player, out Frequency frequency))
+                frequency.RemovePlayer(ev.Player);
         }
 
         private static void OnSettingValueReceived(ReferenceHub hub, ServerSpecificSettingBase settingBase)
         {
-            if (settingBase is not SSKeybindSetting keybindSetting || keybindSetting.SettingId != _keybindId || !keybindSetting.SyncIsPressed)
+            if (settingBase is not SSKeybindSetting keybindSetting || keybindSetting.SettingId != Plugin.Singleton.Config.KeybindId || !keybindSetting.SyncIsPressed)
                 return;
 
             if (!Player.TryGet(hub, out Player player)) 
