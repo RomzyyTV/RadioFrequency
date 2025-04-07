@@ -61,6 +61,11 @@ namespace RadioFrequency.Features
 
             return frequencies[index == -1 ? 0 : (index + 1) % frequencies.Count];
         }
+        
+        public static string GetFrenquencyName(Player player)
+        {
+            return TryGetPlayerFrequency(player, out var frequency) ? frequency.Name : Plugin.Singleton.Config.NoneFrequency;
+        }
 
         public void Init()
         {
