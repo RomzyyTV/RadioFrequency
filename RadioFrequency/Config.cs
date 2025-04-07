@@ -48,5 +48,8 @@ namespace RadioFrequency
 
         [Description("Hint displayed when the frequency has been changed.")]
         public string ChangedFrequencyHint { get; set; } = "You changed the radio frequency to {radio_frequency}.";
+
+        [Description("If no frequency is found")]
+        public string NoneFrequency { get; set; } = "None Frequency";
     }
 }
